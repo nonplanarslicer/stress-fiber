@@ -1,0 +1,13 @@
+{
+  "name": "nonplanarslicer-stress-fiber",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Research scaffold for stress-aligned non-planar slicing and continuous-fiber planning.",
+  "packageManager": "pnpm@9.15.9",
+  "scripts": {
+    "dev": "pnpm --filter @nonplanarslicer/app dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "native:build": "pnpm --filter @nonplanarslicer/native build"
+  }
+}
