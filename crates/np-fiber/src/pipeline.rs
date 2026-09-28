@@ -21,7 +21,9 @@ pub struct FiberPipelineInput {
     pub layers: Vec<LayerSurface>,
     pub stress: Vec<StressSample>,
     pub hardware: FiberHardwareProfile,
-    /// Iso levels in scalar units; empty → stub extracts nothing.
+    /// Iso levels in scalar units. Empty → [`extract_centerlines`] auto-picks
+    /// [`crate::isocurve::DEFAULT_ISO_LEVEL_COUNT`] evenly spaced levels over
+    /// the observed φ range (implementation default, not a paper constant).
     pub iso_levels: Vec<f64>,
 }
 
@@ -35,7 +37,7 @@ pub struct FiberPipelineResult {
     pub dual_extrude: DualExtrudePlan,
 }
 
-/// Run the #15 adaptive stress-isocurve pipeline (stubs behind stable seams).
+/// Run the #15 adaptive stress-isocurve pipeline.
 pub fn run_stress_isocurve_pipeline(input: &FiberPipelineInput) -> FiberPipelineResult {
     let fields = build_stress_weighted_field(&FieldInput {
         layers: &input.layers,

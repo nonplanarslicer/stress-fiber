@@ -7,9 +7,22 @@ Research cards: `papers/cards/015-*.md`, `010-*.md`, `052-*.md`.
 
 ## Priority
 
-1. **#15** — stress-weighted scalar → isocurve centerlines → bend-radius gate → matrix fill → dual-extrude sync
-2. **#10** — PSL-guided hole loops (`hole_loops`, stub)
-3. **#52** — 2-RoSy + periodic scalar dense packing (`rosy`, stub)
+1. **#15** — stress-weighted scalar → isocurve centerlines → bend-radius gate → matrix fill → dual-extrude sync (**implemented**)
+2. **#10** — PSL-guided hole loops (`hole_loops`, **stub**)
+3. **#52** — 2-RoSy + periodic scalar dense packing (`rosy`, **stub**)
+
+## What #15 implements
+
+| Stage | Module | Status |
+| --- | --- | --- |
+| Stress-weighted scalar φ | `field` | PCA local frame, IDW stress, magnitude→spacing from hardware, integrate `Δφ = Δu_ortho / s` |
+| Isocurve centerlines | `isocurve` | Marching squares on UV grid; empty `iso_levels` → N=8 evenly spaced over `[φ_min, φ_max]` (API default, not a paper constant) |
+| Bend-radius gate | `bend` | Circumradius filter; radius from `FiberHardwareProfile` |
+| Matrix fill | `matrix_fill` | Zigzag hatch between ≥2 fibers; else boundary-parallel AABB pass |
+| Dual-extrude sync | `dual_extrude` | `fiber_on=true` on fiber TCP, `false` on matrix |
+| Orchestration | `pipeline` | `run_stress_isocurve_pipeline` |
+
+Still stubs: `#10` (`hole_loops`), `#52` (`rosy`).
 
 ## Module map
 

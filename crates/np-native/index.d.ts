@@ -99,6 +99,10 @@ export interface JsFiberPipelineResult {
 export declare function core_run(inputJson: string): string
 export declare function fiber_run(inputJson: string): string
 export declare function pack_run(inputJson: string): string
+/** TCP/G-code STUB (M700–M703 placeholders). Not machine-validated.
+ * Request: { candidates, output, program_name?, feed_mm_min? }
+ */
+export declare function pack_emit_gcode(requestJson: string): string
 export declare function fiber_run_pipeline(input: JsFiberPipelineInput): JsFiberPipelineResult
 export declare function fiber_filter_bend_radius(
   polylines: Array<JsFiberPolyline>,

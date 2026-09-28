@@ -31,6 +31,46 @@ pub fn pack_run(input_json: String) -> String {
     serde_json::to_string(&np_pack::run(&input)).unwrap_or_else(|_| "{}".into())
 }
 
+/// Emit TCP / G-code **STUB** for a packed tour.
+///
+/// Request JSON:
+/// `{ "candidates": LoopCandidate[], "output": PackOutput, "program_name"?: string, "feed_mm_min"?: number }`
+///
+/// Dialect is a placeholder (M700–M703 fiber feed comments) — **not machine-validated**.
+/// Does not modify `core_run` / `fiber_run` / fiber_* exports.
+#[napi]
+pub fn pack_emit_gcode(request_json: String) -> String {
+    let v: serde_json::Value = match serde_json::from_str(&request_json) {
+        Ok(v) => v,
+        Err(e) => {
+            return format!("; np-pack G-code STUB error: invalid request JSON ({e})\n");
+        }
+    };
+    let candidates: Vec<np_pack::LoopCandidate> =
+        match serde_json::from_value(v.get("candidates").cloned().unwrap_or(serde_json::json!([]))) {
+            Ok(c) => c,
+            Err(e) => {
+                return format!("; np-pack G-code STUB error: candidates ({e})\n");
+            }
+        };
+    let output: np_pack::PackOutput = match serde_json::from_value(
+        v.get("output").cloned().unwrap_or(serde_json::json!({})),
+    ) {
+        Ok(o) => o,
+        Err(e) => {
+            return format!("; np-pack G-code STUB error: output ({e})\n");
+        }
+    };
+    let mut opts = np_pack::ExportOptions::default();
+    if let Some(name) = v.get("program_name").and_then(|x| x.as_str()) {
+        opts.program_name = name.to_string();
+    }
+    if let Some(feed) = v.get("feed_mm_min").and_then(|x| x.as_f64()) {
+        opts.feed_mm_min = feed;
+    }
+    np_pack::emit_gcode_stub(&candidates, &output, &opts)
+}
+
 // ---------------------------------------------------------------------------
 // Family B / #42 Core TypeScript-friendly types (locked Part-F contract)
 // ---------------------------------------------------------------------------
@@ -351,9 +391,13 @@ fn convert_pipeline_result(result: np_fiber::FiberPipelineResult) -> JsFiberPipe
             .into_iter()
             .map(|f| JsFiberPath {
                 id: f.id,
-                layer_id: f.layer_id,
-                points: f.points.into_iter().map(pjs).collect(),
-                closed: p.closed,
+                polyline: JsFiberPolyline {
+                    id: f.polyline.id,
+                    layer_id: f.polyline.layer_id,
+                    points: f.polyline.points.into_iter().map(pjs).collect(),
+                    closed: f.polyline.closed,
+                },
+                printable: f.printable,
             })
             .collect(),
         matrix: result
