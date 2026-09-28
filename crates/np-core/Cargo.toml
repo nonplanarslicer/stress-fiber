@@ -4,7 +4,6 @@ version = "0.1.0"
 edition = "2021"
 license = "MIT"
 description = "Stress-aligned non-planar slicing primitives (#42 Reinforced FDM)."
-
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 nalgebra = { version = "0.33", features = ["serde-serialize"] }
