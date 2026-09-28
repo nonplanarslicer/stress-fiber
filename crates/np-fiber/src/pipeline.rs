@@ -4,10 +4,13 @@
 //! 1–2 stress-weighted scalar field → 3 isocurve centerlines → 4 bend-radius
 //! enforcement → 5 matrix fill → dual-extrude sync.
 //!
-//! #10 and #52 are optional later stages and are not run here by default.
+//! Optional #10: when [`FiberPipelineInput::holes`] is non-empty, closed hole
+//! loops are appended to centerlines before the bend gate. Empty holes leave
+//! the #15 path unchanged. #52 remains a later stub stage.
 
 use crate::dual_extrude::{sync_dual_extrude, DualExtrudePlan};
 use crate::field::{build_stress_weighted_field, FieldInput};
+use crate::hole_loops::{generate_hole_loops, HoleTarget};
 use crate::isocurve::extract_centerlines;
 use crate::layer::LayerSurface;
 use crate::matrix_fill::{fill_between_fibers, MatrixSegment};
@@ -25,6 +28,9 @@ pub struct FiberPipelineInput {
     /// [`crate::isocurve::DEFAULT_ISO_LEVEL_COUNT`] evenly spaced levels over
     /// the observed φ range (implementation default, not a paper constant).
     pub iso_levels: Vec<f64>,
+    /// Optional #10 hole targets. Empty → #15-only path (no hole loops).
+    #[serde(default)]
+    pub holes: Vec<HoleTarget>,
 }
 
 /// #15 pipeline result exposed to napi / TypeScript.
@@ -38,13 +44,20 @@ pub struct FiberPipelineResult {
 }
 
 /// Run the #15 adaptive stress-isocurve pipeline.
+///
+/// When `input.holes` is non-empty, #10 [`generate_hole_loops`] results are
+/// appended to centerlines before the bend gate.
 pub fn run_stress_isocurve_pipeline(input: &FiberPipelineInput) -> FiberPipelineResult {
     let fields = build_stress_weighted_field(&FieldInput {
         layers: &input.layers,
         stress: &input.stress,
         hardware: &input.hardware,
     });
-    let centerlines = extract_centerlines(&fields, &input.iso_levels);
+    let mut centerlines = extract_centerlines(&fields, &input.iso_levels);
+    if !input.holes.is_empty() {
+        let hole_loops = generate_hole_loops(&input.layers, &input.holes, &input.hardware);
+        centerlines.extend(hole_loops);
+    }
     let fibers = crate::bend::enforce_bend_radius(&centerlines, &input.hardware);
     let matrix = fill_between_fibers(&input.layers, &fibers, &input.hardware);
     let dual_extrude = sync_dual_extrude(&fibers, &matrix);
