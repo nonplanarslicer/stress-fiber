@@ -5,10 +5,6 @@
 //!
 //! Layer iso-surfaces come from NP Rust Core (#42) via [`layer::LayerSurface`].
 //! This crate never reimplements iso-layer extraction.
-//!
-//! Research cards: `papers/cards/015-field-based-toolpaths-cfrtpc.md`,
-//! `010-spatial-printing-continuous-fiber.md`,
-//! `052-high-density-spatial-fiber-toolpaths.md`.
 
 pub mod bend;
 pub mod dual_extrude;
@@ -27,7 +23,7 @@ pub use bend::{
 pub use dual_extrude::{sync_dual_extrude, DualExtrudePlan};
 pub use field::{build_stress_weighted_field, FieldInput};
 pub use hole_loops::{generate_hole_loops, HoleTarget};
-pub use isocurve::extract_centerlines;
+pub use isocurve::{extract_centerlines, DEFAULT_ISO_LEVEL_COUNT};
 pub use layer::{LayerSurface, TcpPath, ToolpathPoint};
 pub use matrix_fill::{fill_between_fibers, MatrixSegment};
 pub use pipeline::{run_stress_isocurve_pipeline, FiberPipelineInput, FiberPipelineResult};
@@ -41,9 +37,6 @@ pub use types::{
 
 use serde::{Deserialize, Serialize};
 
-/// Backward-compatible JSON entry used by `fiber_run` in np-native.
-///
-/// Prefer [`FiberPipelineInput`] / [`run_stress_isocurve_pipeline`] for #15.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct FiberInput {
     #[serde(default)]
@@ -60,7 +53,6 @@ pub struct FiberOutput {
     pub pipeline: FiberPipelineResult,
 }
 
-/// JSON-friendly runner for the native bridge.
 pub fn run(input: &FiberInput) -> FiberOutput {
     let pipeline = run_stress_isocurve_pipeline(&FiberPipelineInput {
         layers: input.layers.clone(),
