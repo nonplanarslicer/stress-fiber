@@ -1,5 +1,5 @@
+//! Fiber-loop packing types (#27 / #22).
 use serde::{Deserialize, Serialize};
-
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct LoopCandidate { pub id: String, pub layer_id: u32, pub points: Vec<[f64; 2]>, pub weight: f64, pub length: f64, #[serde(default, skip_serializing_if = "Option::is_none")] pub min_bend_radius: Option<f64> }
 #[derive(Clone, Debug, Serialize, Deserialize)]
