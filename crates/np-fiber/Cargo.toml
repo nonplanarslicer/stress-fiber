@@ -1,0 +1,10 @@
+[package]
+name = "np-fiber"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Family E continuous-fiber fields (#15 / #10 / #52) on NP Core layers."
+
+[dependencies]
+np-core = { path = "../np-core" }
+serde = { version = "1", features = ["derive"] }
